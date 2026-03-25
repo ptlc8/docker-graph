@@ -1,157 +1,157 @@
 {{ $containers := . }}
-{{ if $containers }}
+{{- if $containers }}
 flowchart LR
 
-    {{/* COLLECT NETWORKS */}}
-    {{ $networks := dict }}
-    {{ range $c := $containers }}
-        {{ range $c.Networks }}
-            {{ if not (or (eq .Name "bridge") (eq .Name "host") (eq .Name "none")) }}
-                {{ $existing := index $networks .Name }}
-                {{ if not $existing }}{{ $existing = list }}{{ end }}
-                {{ $newList := append $existing $c }}
-                {{ $_ := set $networks .Name $newList }}
-            {{ end }}
-        {{ end }}
-    {{ end }}
+{{- /* COLLECT NETWORKS */}}
+    {{- $networks := dict }}
+    {{- range $c := $containers }}
+        {{- range $c.Networks }}
+            {{- if not (or (eq .Name "bridge") (eq .Name "host") (eq .Name "none")) }}
+                {{- $existing := index $networks .Name }}
+                {{- if not $existing }}{{ $existing = list }}{{ end }}
+                {{- $_ := set $networks .Name (append $existing $c) }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
 
-    {{/* COLLECT SERVICES (group by project+service) */}}
-    {{ $services := dict }}
-    {{ $replicaCount := dict }}
-    {{ range $containers }}
-        {{ $proj := index .Labels "com.docker.compose.project" }}
-        {{ if and $proj $svc }}
-            {{ $key := printf "%s-%s" $proj $svc }}
-            {{ if not (index $services $key) }}
-                {{ $_ := set $services $key . }}
-            {{ end }}
-            {{ $current := index $replicaCount $key }}
-            {{ if not $current }}{{ $current = 0 }}{{ end }}
-            {{ $_ := set $replicaCount $key (add $current 1) }}
-        {{ end }}
-    {{ end }}
+    {{- /* COLLECT SERVICES (group by project+service) */}}
+    {{- $services := dict }}
+    {{- $replicaCount := dict }}
+    {{- range $containers }}
+        {{- $proj := index .Labels "com.docker.compose.project" }}
+        {{- $svc := index .Labels "com.docker.compose.service" }}
+        {{- if and $proj $svc }}
+            {{- $key := printf "%s-%s" $proj $svc }}
+            {{- if not (index $services $key) }}
+                {{- $_ := set $services $key . }}
+            {{- end }}
+            {{- $current := index $replicaCount $key }}
+            {{- if not $current }}{{ $current = 0 }}{{ end }}
+            {{- $_ := set $replicaCount $key (add $current 1) }}
+        {{- end }}
+    {{- end }}
 
-    {{/* DEFINE SERVICE NODES */}}
-    {{ range $svcKey, $container := $services }}
-        {{ $svc := index $container.Labels "com.docker.compose.service" }}
-        {{ $name := regexReplaceAll "[-/.]" $svcKey "_" }}
-        {{ $count := index $replicaCount $svcKey }}
-        {{ $display := $svc }}
-        {{ if contains "_" $display }}{{ $display = index (split $display "_") 0 }}{{ end }}
-        
-        {{ $img := lower $container.Image.Repository }}
-        {{ $nameLower := lower $svc }}
-        {{ $type := "service" }}
-        
-        {{ if or (regexMatch "postgres|mysql|mongo|mariadb|elasticsearch|sqlite|dgraph|cockroach" $img) (regexMatch "postgres|mysql|mongo|db|database" $nameLower) }}
-            {{ $type = "database" }}
-        {{ else if or (regexMatch "redis|memcached|valkey|keydb" $img) (regexMatch "redis|cache" $nameLower) }}
-            {{ $type = "cache" }}
-        {{ else if or (regexMatch "nginx|traefik|caddy|haproxy|envoy" $img) (regexMatch "nginx|proxy|lb" $nameLower) }}
-            {{ $type = "proxy" }}
-        {{ else if or (regexMatch "kratos|jackson|keycloak|vault|oauth|authelia" $img) (regexMatch "auth|sso|identity" $nameLower) }}
-            {{ $type = "auth" }}
-        {{ else if or (regexMatch "prometheus|grafana|jaeger|zipkin|datadog" $img) (regexMatch "monitor|metrics|observ" $nameLower) }}
-            {{ $type = "monitoring" }}
-        {{ else if or (regexMatch "kafka|rabbitmq|nats|mqtt|nsq" $img) (regexMatch "queue|message|broker|stream|mail|smtp|email" $nameLower) }}
-            {{ $type = "messaging" }}
-        {{ else if or (regexMatch "minio|s3|ceph|swift" $img) (regexMatch "storage|s3|minio" $nameLower) }}
-            {{ $type = "storage" }}
-        {{ else if regexMatch "pgadmin|adminer|phpmyadmin" $img }}
-            {{ $type = "database" }}
-        {{ else if regexMatch "api|backend|server|app|service|web|www|site|frontend|ui" $nameLower }}
-            {{ $type = "app" }}
-        {{ end }}
-        
-        {{ if gt $count 1 }}
-            {{ $name }}["{{ $display }} (×{{ $count }})"]
-        {{ else }}
-            {{ $name }}["{{ $display }}"]
-        {{ end }}
-        {{ $name }}:::{{ $type }}
-    {{ end }}
+    {{- /* DEFINE SERVICE NODES */}}
+    {{- range $svcKey, $container := $services }}
+        {{- $svc := index $container.Labels "com.docker.compose.service" }}
+        {{- $name := regexReplaceAll "[-/.]" $svcKey "_" }}
+        {{- $count := index $replicaCount $svcKey }}
+        {{- $display := $svc }}
+        {{- if contains "_" $display }}{{ $display = index (split $display "_") 0 }}{{ end }}
+        {{- $img := lower $container.Image.Repository }}
+        {{- $nameLower := lower $svc }}
+        {{- $type := "service" }}
+        {{- if or (regexMatch "postgres|mysql|mongo|mariadb|elasticsearch|sqlite|dgraph|cockroach" $img) (regexMatch "postgres|mysql|mongo|db|database" $nameLower) }}
+            {{- $type = "database" }}
+        {{- else if or (regexMatch "redis|memcached|valkey|keydb" $img) (regexMatch "redis|cache" $nameLower) }}
+            {{- $type = "cache" }}
+        {{- else if or (regexMatch "nginx|traefik|caddy|haproxy|envoy" $img) (regexMatch "nginx|proxy|lb" $nameLower) }}
+            {{- $type = "proxy" }}
+        {{- else if or (regexMatch "kratos|jackson|keycloak|vault|oauth|authelia" $img) (regexMatch "auth|sso|identity" $nameLower) }}
+            {{- $type = "auth" }}
+        {{- else if or (regexMatch "prometheus|grafana|jaeger|zipkin|datadog" $img) (regexMatch "monitor|metrics|observ" $nameLower) }}
+            {{- $type = "monitoring" }}
+        {{- else if or (regexMatch "kafka|rabbitmq|nats|mqtt|nsq" $img) (regexMatch "queue|message|broker|stream|mail|smtp|email" $nameLower) }}
+            {{- $type = "messaging" }}
+        {{- else if or (regexMatch "minio|s3|ceph|swift" $img) (regexMatch "storage|s3|minio" $nameLower) }}
+            {{- $type = "storage" }}
+        {{- else if regexMatch "pgadmin|adminer|phpmyadmin" $img }}
+            {{- $type = "database" }}
+        {{- else if regexMatch "api|backend|server|app|service|web|www|site|frontend|ui" $nameLower }}
+            {{- $type = "app" }}
+        {{- end }}
+        {{- if gt $count 1 }}
+    {{ $name }}("{{ $display }} (×{{ $count }})")
+        {{- else }}
+    {{ $name }}("{{ $display }}")
+        {{- end }}
+    {{ $name }}:::{{ $type }}
+    {{- end }}
 
-    {{/* STYLE DEFINITIONS */}}
-    classDef database fill:#4a90e2,stroke:#01579b,stroke-width:2px
+    {{- /* STYLE DEFINITIONS */}}
+    classDef database fill:#60a5fa,stroke:#2563eb,stroke-width:2px
     classDef cache fill:#f5a623,stroke:#f57f17,stroke-width:2px
-    classDef proxy fill:#bd10e0,stroke:#4a148c,stroke-width:2px
+    classDef proxy fill:#c084fc,stroke:#7c3aed,stroke-width:2px
     classDef auth fill:#7ed321,stroke:#417505,stroke-width:2px
-    classDef service fill:#999,stroke:#424242,stroke-width:1px
+    classDef service fill:#d1d5db,stroke:#6b7280,stroke-width:1px
     classDef messaging fill:#ff9800,stroke:#e65100,stroke-width:2px
     classDef app fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px
 
-    {{/* EXTERNAL NETWORKS */}}
-    {{ $seenNetLinks := dict }}
-    {{ range $netName, $members := $networks }}
-        {{ if not (hasSuffix "_default" $netName) }}
-            net_{{ $netName }}["{{ $netName }}"]
-            style net_{{ $netName }} fill:#fff,stroke:#666,stroke-dasharray: 5 5,stroke-width:2px
-            {{ range $members }}
-                {{ $svc := index .Labels "com.docker.compose.service" }}
-                {{ $proj := index .Labels "com.docker.compose.project" }}
-                {{ $svcKey := printf "%s-%s" $proj $svc }}
-                {{ $first := index $services $svcKey }}
-                {{ if $first }}
-                    {{ $name := regexReplaceAll "[-/.]" $svcKey "_" }}
-                    {{ $netLinkKey := printf "%s-%s" $name $netName }}
-                    {{ if not (index $seenNetLinks $netLinkKey) }}
-                        {{ $_ := set $seenNetLinks $netLinkKey true }}
-                        {{ $name }} -.-> net_{{ $netName }}
-                    {{ end }}
-                {{ end }}
-            {{ end }}
-        {{ end }}
-    {{ end }}
+    {{- /* EXTERNAL NETWORKS */}}
+    {{- $seenNetLinks := dict }}
+    {{- range $netName, $members := $networks }}
+        {{- if not (hasSuffix "_default" $netName) }}
+            {{- $netSafe := regexReplaceAll "[-/.]" $netName "_" }}
+    {{ $netSafe }}["{{ $netName }}"]
+    style {{ $netSafe }} fill:#fff,stroke:#666,stroke-dasharray: 5 5,stroke-width:2px
+            {{- range $members }}
+                {{- $svc := index .Labels "com.docker.compose.service" }}
+                {{- $proj := index .Labels "com.docker.compose.project" }}
+                {{- $svcKey := printf "%s-%s" $proj $svc }}
+                {{- $first := index $services $svcKey }}
+                {{- if $first }}
+                    {{- $name := regexReplaceAll "[-/.]" $svcKey "_" }}
+                    {{- $netLinkKey := printf "%s-%s" $name $netSafe }}
+                    {{- if not (index $seenNetLinks $netLinkKey) }}
+                        {{- $_ := set $seenNetLinks $netLinkKey true }}
+    {{ $name }} -.-> {{ $netSafe }}
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
 
-    {{/* DEPENDENCY LINKS */}}
-    {{ $seenLinks := dict }}
-    {{ range $containers }}
-        {{ $proj := index .Labels "com.docker.compose.project" }}
-        {{ $depLabel := index .Labels "com.docker.compose.depends_on" }}
-        {{ if and $proj $depLabel }}
-            {{ $mySvc := index .Labels "com.docker.compose.service" }}
-            {{ $myKey := printf "%s-%s" $proj $mySvc }}
-            {{ $myFirst := index $services $myKey }}
-            {{ if $myFirst }}
-                {{ $myName := regexReplaceAll "[-/.]" $myKey "_" }}
-                {{ $deps := split $depLabel "," }}
-                {{ range $deps }}
-                    {{ $depName := index (split . ":") 0 }}
-                    {{ $depKey := printf "%s-%s" $proj $depName }}
-                    {{ $depFirst := index $services $depKey }}
-                    {{ if $depFirst }}
-                        {{ $depNameFull := regexReplaceAll "[-/.]" $depKey "_" }}
-                        {{ $linkKey := printf "%s-->%s" $myName $depNameFull }}
-                        {{ if not (index $seenLinks $linkKey) }}
-                            {{ $_ := set $seenLinks $linkKey true }}
-                            {{ $myName }} --> {{ $depNameFull }}
-                        {{ end }}
-                    {{ end }}
-                {{ end }}
-            {{ end }}
-        {{ end }}
-    {{ end }}
+    {{- /* DEPENDENCY LINKS */}}
+    {{- $seenLinks := dict }}
+    {{- range $containers }}
+        {{- $proj := index .Labels "com.docker.compose.project" }}
+        {{- $depLabel := index .Labels "com.docker.compose.depends_on" }}
+        {{- if and $proj $depLabel }}
+            {{- $mySvc := index .Labels "com.docker.compose.service" }}
+            {{- $myKey := printf "%s-%s" $proj $mySvc }}
+            {{- $myFirst := index $services $myKey }}
+            {{- if $myFirst }}
+                {{- $myName := regexReplaceAll "[-/.]" $myKey "_" }}
+                {{- $deps := split $depLabel "," }}
+                {{- range $deps }}
+                    {{- $depName := index (split . ":") 0 }}
+                    {{- $depKey := printf "%s-%s" $proj $depName }}
+                    {{- $depFirst := index $services $depKey }}
+                    {{- if $depFirst }}
+                        {{- $depNameFull := regexReplaceAll "[-/.]" $depKey "_" }}
+                        {{- $linkKey := printf "%s-->%s" $myName $depNameFull }}
+                        {{- if not (index $seenLinks $linkKey) }}
+                            {{- $_ := set $seenLinks $linkKey true }}
+    {{ $myName }} --> {{ $depNameFull }}
+                        {{- end }}
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
 
-    {{/* COMPOSE PROJECT SUBGRAPHS */}}
-    {{ range $netName, $members := $networks }}
-        {{ if hasSuffix "_default" $netName }}
-            subgraph {{ trimSuffix "_default" $netName }}
-                {{ $seen := dict }}
-                {{ range $members }}
-                    {{ $svc := index .Labels "com.docker.compose.service" }}
-                    {{ $proj := index .Labels "com.docker.compose.project" }}
-                    {{ $svcKey := printf "%s-%s" $proj $svc }}
-                    {{ if not (index $seen $svcKey) }}
-                        {{ $_ := set $seen $svcKey true }}
-                        {{ $name := regexReplaceAll "[-/.]" $svcKey "_" }}
-                        {{ $name }}
-                    {{ end }}
-                {{ end }}
-            end
-        {{ end }}
-    {{ end }}
+    {{- /* COMPOSE PROJECT SUBGRAPHS */}}
+    {{- range $netName, $members := $networks }}
+        {{- if hasSuffix "_default" $netName }}
+            {{- $subgraphName := trimSuffix "_default" $netName }}
+    subgraph {{ $subgraphName }}
+            {{- $seen := dict }}
+            {{- range $members }}
+                {{- $svc := index .Labels "com.docker.compose.service" }}
+                {{- $proj := index .Labels "com.docker.compose.project" }}
+                {{- $svcKey := printf "%s-%s" $proj $svc }}
+                {{- if not (index $seen $svcKey) }}
+                    {{- $_ := set $seen $svcKey true }}
+                    {{- $name := regexReplaceAll "[-/.]" $svcKey "_" }}
+        {{ $name }}
+                {{- end }}
+            {{- end }}
+    end
+    style {{ $subgraphName }} fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,rx:8px,ry:8px
+        {{- end }}
+    {{- end }}
 
-{{ else }}
+{{- else }}
 flowchart LR
     note["No containers running"]
-{{ end }}
+{{- end }}
