@@ -11,10 +11,12 @@ services:
     depends_on:
       - generator
     ports:
-      - "6498:80"
+      - "${PORT:-6498}:80"
     volumes:
       - web-output:/var/graph:ro
     restart: unless-stopped
+    labels:
+      - webproxy.subdomain=view
 
 volumes:
   web-output:
