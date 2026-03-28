@@ -87,6 +87,67 @@ digraph docker {
     {{ $name }} [label="{{ $label }}", fillcolor="{{ $color }}", color="{{ $borderColor }}", penwidth=2];
     {{- end }}
 
+    {{- /* FIND PROXY CONTAINER */}}
+    {{- $proxyContainer := dict }}
+    {{- $proxyName := dict }}
+    {{- $topDomain := dict }}
+    {{- range $containers }}
+        {{- $svc := index .Labels "com.docker.compose.service" }}
+        {{- if eq $svc "http-daemon" }}
+            {{- $proj := index .Labels "com.docker.compose.project" }}
+            {{- if $proj }}
+                {{- $proxyKey := printf "%s-%s" $proj $svc }}
+                {{- $_ := set $proxyContainer "value" . }}
+                {{- $_ := set $proxyName "value" (regexReplaceAll "[-/.]" $proxyKey "_") }}
+            {{- end }}
+        {{- end }}
+        {{- if eq $svc "config-generator" }}
+            {{- /* Extract TOPDOMAIN from config-generator environment variables */}}
+            {{- $value := index .Env "TOPDOMAIN" }}
+            {{- if $value }}
+                {{- $_ := set $topDomain "value" $value }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+
+    {{- /* WEBPROXY LINKS */}}
+    {{- $proxyNameVal := index $proxyName "value" }}
+    {{- $topDomainVal := index $topDomain "value" }}
+    {{- if not $topDomainVal }}{{ $topDomainVal = "TOPDOMAIN" }}{{ end }}
+    {{- if $proxyNameVal }}
+        {{- range $svcKey, $container := $services }}
+            {{- $hasWebproxy := false }}
+            {{- range $key, $value := $container.Labels }}
+                {{- if hasPrefix "webproxy." $key }}
+                    {{- $hasWebproxy = true }}
+                {{- end }}
+            {{- end }}
+            {{- if $hasWebproxy }}
+                {{- $myName := regexReplaceAll "[-/.]" $svcKey "_" }}
+                {{- $webproxySubdomain := index $container.Labels "webproxy.subdomain" }}
+                {{- $webproxyDomain := index $container.Labels "webproxy.domain" }}
+                {{- $webproxyPath := index $container.Labels "webproxy.path" }}
+                {{- $domain := $topDomainVal }}
+                {{- if $webproxyDomain }}{{ $domain = $webproxyDomain }}{{ end }}
+                {{- $path := "" }}
+                {{- if $webproxyPath }}
+                    {{- if hasPrefix "/" $webproxyPath }}
+                        {{- $path = $webproxyPath }}
+                    {{- else }}
+                        {{- $path = printf "/%s" $webproxyPath }}
+                    {{- end }}
+                {{- end }}
+                {{- $linkText := "" }}
+                {{- if $webproxySubdomain }}
+                    {{- $linkText = printf "%s.%s%s" $webproxySubdomain $domain $path }}
+                {{- else }}
+                    {{- $linkText = printf "%s%s" $domain $path }}
+                {{- end }}
+    {{ $proxyNameVal }} -> {{ $myName }} [label="{{ $linkText }}", style=dashed, color="#9333ea"];
+            {{- end }}
+        {{- end }}
+    {{- end }}
+
     {{- /* EXTERNAL NETWORKS */}}
     {{- $seenNetLinks := dict }}
     {{- range $netName, $members := $networks }}

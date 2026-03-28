@@ -34,6 +34,10 @@ Puis ouvrir http://localhost:6498 dans votre navigateur.
 - **Réseaux externes** : Affichés en ellipse avec liens pointillés
 - **Dépendances** : Flèches entre services basées sur `depends_on`
 
+## Intégration
+
+Compatible avec [apache-docker-proxy](https://github.com/ptlc8/apache-docker-proxy).
+
 ## TODO
 
 - Afficher les ports exposés sur chaque service
