@@ -1,6 +1,10 @@
 {{ $containers := . }}
 {{- if $containers }}
-flowchart LR
+digraph docker {
+    // Graph settings
+    graph [layout=fdp, overlap=false, splines=curved, sep=1.2, K=0.6, bgcolor=transparent];
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=9, color="#666666"];
 
 {{- /* COLLECT NETWORKS */}}
     {{- $networks := dict }}
@@ -41,48 +45,54 @@ flowchart LR
         {{- $img := lower $container.Image.Repository }}
         {{- $nameLower := lower $svc }}
         {{- $type := "service" }}
+        {{- $color := "#d1d5db" }}
+        {{- $borderColor := "#6b7280" }}
         {{- if or (regexMatch "postgres|mysql|mongo|mariadb|elasticsearch|sqlite|dgraph|cockroach" $img) (regexMatch "postgres|mysql|mongo|db|database" $nameLower) }}
             {{- $type = "database" }}
+            {{- $color = "#60a5fa" }}
+            {{- $borderColor = "#2563eb" }}
         {{- else if or (regexMatch "redis|memcached|valkey|keydb" $img) (regexMatch "redis|cache" $nameLower) }}
             {{- $type = "cache" }}
+            {{- $color = "#fbbf24" }}
+            {{- $borderColor = "#f59e0b" }}
         {{- else if or (regexMatch "nginx|traefik|caddy|haproxy|envoy" $img) (regexMatch "nginx|proxy|lb|http-daemon|httpd" $nameLower) }}
             {{- $type = "proxy" }}
+            {{- $color = "#c084fc" }}
+            {{- $borderColor = "#7c3aed" }}
         {{- else if or (regexMatch "kratos|jackson|keycloak|vault|oauth|authelia" $img) (regexMatch "auth|sso|identity" $nameLower) }}
             {{- $type = "auth" }}
+            {{- $color = "#7ed321" }}
+            {{- $borderColor = "#417505" }}
         {{- else if or (regexMatch "prometheus|grafana|jaeger|zipkin|datadog" $img) (regexMatch "monitor|metrics|observ" $nameLower) }}
             {{- $type = "monitoring" }}
+            {{- $color = "#f3f4f6" }}
+            {{- $borderColor = "#9ca3af" }}
         {{- else if or (regexMatch "kafka|rabbitmq|nats|mqtt|nsq" $img) (regexMatch "queue|message|broker|stream|mail|smtp|email" $nameLower) }}
             {{- $type = "messaging" }}
+            {{- $color = "#ff9800" }}
+            {{- $borderColor = "#e65100" }}
         {{- else if regexMatch "pgadmin|adminer|phpmyadmin" $img }}
             {{- $type = "database" }}
+            {{- $color = "#60a5fa" }}
+            {{- $borderColor = "#2563eb" }}
         {{- else if regexMatch "api|backend|server|app|service|web|www|site|frontend|ui" $nameLower }}
             {{- $type = "app" }}
+            {{- $color = "#ff6b6b" }}
+            {{- $borderColor = "#c92a2a" }}
         {{- end }}
+        {{- $label := $display }}
         {{- if gt $count 1 }}
-    {{ $name }}("{{ $display }} (×{{ $count }})")
-        {{- else }}
-    {{ $name }}("{{ $display }}")
+            {{- $label = printf "%s (×%d)" $display $count }}
         {{- end }}
-    {{ $name }}:::{{ $type }}
+    {{ $name }} [label="{{ $label }}", fillcolor="{{ $color }}", color="{{ $borderColor }}", penwidth=2];
     {{- end }}
-
-    {{- /* STYLE DEFINITIONS */}}
-    classDef database fill:#60a5fa,stroke:#2563eb,stroke-width:2px
-    classDef cache fill:#fbbf24,stroke:#f59e0b,stroke-width:2px
-    classDef proxy fill:#c084fc,stroke:#7c3aed,stroke-width:2px
-    classDef auth fill:#7ed321,stroke:#417505,stroke-width:2px
-    classDef service fill:#d1d5db,stroke:#6b7280,stroke-width:1px
-    classDef messaging fill:#ff9800,stroke:#e65100,stroke-width:2px
-    classDef monitoring fill:#f3f4f6,stroke:#9ca3af,stroke-width:2px
-    classDef app fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px
 
     {{- /* EXTERNAL NETWORKS */}}
     {{- $seenNetLinks := dict }}
     {{- range $netName, $members := $networks }}
         {{- if not (hasSuffix "_default" $netName) }}
             {{- $netSafe := regexReplaceAll "[-/.]" $netName "_" }}
-    {{ $netSafe }}["{{ $netName }}"]
-    style {{ $netSafe }} fill:#fff,stroke:#666,stroke-dasharray: 5 5,stroke-width:2px
+    {{ $netSafe }} [label="{{ $netName }}", shape=ellipse, style="dashed,filled", fillcolor="#ffffff", color="#666666"];
             {{- range $members }}
                 {{- $svc := index .Labels "com.docker.compose.service" }}
                 {{- $proj := index .Labels "com.docker.compose.project" }}
@@ -93,7 +103,7 @@ flowchart LR
                     {{- $netLinkKey := printf "%s-%s" $name $netSafe }}
                     {{- if not (index $seenNetLinks $netLinkKey) }}
                         {{- $_ := set $seenNetLinks $netLinkKey true }}
-    {{ $name }} -.-> {{ $netSafe }}
+    {{ $name }} -> {{ $netSafe }} [style=dashed, color="#999999", dir=none];
                     {{- end }}
                 {{- end }}
             {{- end }}
@@ -121,7 +131,7 @@ flowchart LR
                         {{- $linkKey := printf "%s-->%s" $myName $depNameFull }}
                         {{- if not (index $seenLinks $linkKey) }}
                             {{- $_ := set $seenLinks $linkKey true }}
-    {{ $myName }} --> {{ $depNameFull }}
+    {{ $myName }} -> {{ $depNameFull }} [color="#333333"];
                         {{- end }}
                     {{- end }}
                 {{- end }}
@@ -129,11 +139,19 @@ flowchart LR
         {{- end }}
     {{- end }}
 
-    {{- /* COMPOSE PROJECT SUBGRAPHS */}}
+    {{- /* COMPOSE PROJECT CLUSTERS */}}
     {{- range $netName, $members := $networks }}
         {{- if hasSuffix "_default" $netName }}
             {{- $subgraphName := trimSuffix "_default" $netName }}
-    subgraph {{ $subgraphName }}
+            {{- $safeName := regexReplaceAll "[-/.]" $subgraphName "_" }}
+    subgraph cluster_{{ $safeName }} {
+        label="{{ $subgraphName }}";
+        style="filled,rounded";
+        fillcolor="#f8fafc";
+        color="#94a3b8";
+        penwidth=2;
+        fontname="Helvetica";
+        fontsize=12;
             {{- $seen := dict }}
             {{- range $members }}
                 {{- $svc := index .Labels "com.docker.compose.service" }}
@@ -142,15 +160,16 @@ flowchart LR
                 {{- if not (index $seen $svcKey) }}
                     {{- $_ := set $seen $svcKey true }}
                     {{- $name := regexReplaceAll "[-/.]" $svcKey "_" }}
-        {{ $name }}
+        {{ $name }};
                 {{- end }}
             {{- end }}
-    end
-    style {{ $subgraphName }} fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,rx:8px,ry:8px
+    }
         {{- end }}
     {{- end }}
-
+}
 {{- else }}
-flowchart LR
-    note["No containers running"]
+digraph docker {
+    node [shape=box];
+    note [label="No containers running"];
+}
 {{- end }}

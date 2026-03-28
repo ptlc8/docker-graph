@@ -1,7 +1,12 @@
 FROM nginxproxy/docker-gen:latest
 
-COPY templates/mermaid.tmpl /etc/docker-gen/templates/mermaid.tmpl
+# Install Graphviz
+RUN apk add --no-cache graphviz
+
+COPY templates/graphviz.tmpl /etc/docker-gen/templates/graphviz.tmpl
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 WORKDIR /output
 
-CMD ["-watch", "/etc/docker-gen/templates/mermaid.tmpl", "/output/graph.mmd"]
+ENTRYPOINT ["/entrypoint.sh"]

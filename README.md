@@ -1,6 +1,6 @@
 # Docker Graph
 
-Visualisation automatique de l'infrastructure Docker en Mermaid. Les conteneurs sont regroupés par service avec leurs réplicas, colorés par type, et organisés par projet Compose.
+Visualisation automatique de l'infrastructure Docker avec Graphviz. Les conteneurs sont regroupés par service avec leurs réplicas, colorés par type, et organisés par projet Compose.
 
 ## Démarrage
 
@@ -12,20 +12,27 @@ Puis ouvrir http://localhost:6498 dans votre navigateur.
 
 ## Fonctionnement
 
-- **docker-gen** scrute Docker et génère `web/graph.mmd`
-- **nginx** sert la page sur http://localhost:6498
-- **Mermaid.js** rend le diagramme dans le navigateur
-- Le graphe se met à jour automatiquement (mode `-watch`)
+- **docker-gen** scrute Docker et génère un fichier DOT (format Graphviz)
+- **Graphviz (fdp)** convertit le DOT en SVG avec layout force-directed
+- **nginx** sert la page web et le SVG sur http://localhost:6498
 
 ## Couleurs
 
-- 🔵 Database (Postgres, MySQL, Mongo...)
-- 🟡 Cache (Redis)
-- 🟣 Proxy (Nginx, Traefik)
-- 🟢 Auth (Kratos, Jackson...)
-- 🔴 App (API, Backend, Web...)
-- 🟠 Messaging (RabbitMQ, Kafka, Mail...)
-- ⚪ Service (générique)
+- 🔵 **Database** : Postgres, MySQL, Mongo, MariaDB, Elasticsearch, SQLite, pgAdmin, Adminer...
+- 🟡 **Cache** : Redis, Memcached...
+- 🟣 **Proxy** : Nginx, Traefik, Caddy, HAProxy, HTTPd...
+- 🟢 **Auth** : Kratos, Jackson, Keycloak, Vault, OAuth...
+- 🟠 **Messaging** : RabbitMQ, Kafka, SMTP...
+- ⚪ **Monitoring** : Prometheus, Grafana...
+- 🔴 **App** : API, Backend, Frontend, Web (détecté par nom)
+- ⚫ **Service** : Autres services (par défaut)
+
+## Fonctionnalités
+
+- **Clusters Compose** : Boîtes regroupant les services par projet
+- **Réplicas** : Affichage du nombre de réplicas (×N) pour les services scalés
+- **Réseaux externes** : Affichés en ellipse avec liens pointillés
+- **Dépendances** : Flèches entre services basées sur `depends_on`
 
 ## TODO
 

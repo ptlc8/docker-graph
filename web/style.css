@@ -19,8 +19,12 @@ h1 {
     background: transparent;
     padding: 40px;
     min-height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.mermaid {
-    text-align: center;
+#graph-svg {
+    max-width: 100%;
+    height: auto;
 }

@@ -4,27 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Graph</title>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Docker Infrastructure Graph</h1>
     <div id="diagram">
-        <div class="mermaid" id="mermaid-content">Chargement...</div>
+        <img id="graph-svg" src="graph.svg" alt="Docker Infrastructure Graph" />
     </div>
-    
-    <script>
-        mermaid.initialize({ startOnLoad: false });
-        
-        fetch('graph.mmd')
-            .then(response => response.text())
-            .then(content => {
-                document.getElementById('mermaid-content').textContent = content;
-                mermaid.run({ nodes: [document.getElementById('mermaid-content')] });
-            })
-            .catch(err => {
-                document.getElementById('mermaid-content').textContent = 'Erreur de chargement: ' + err;
-            });
-    </script>
 </body>
 </html>
