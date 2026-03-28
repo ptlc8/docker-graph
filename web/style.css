@@ -28,3 +28,191 @@ h1 {
     max-width: 100%;
     height: auto;
 }
+
+/* Legend styles */
+.legend {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 0 auto 30px;
+    max-width: 1200px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legend h2 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: left;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.legend-item:hover {
+    background-color: #f9fafb;
+}
+
+.legend-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    border-width: 2px;
+    border-style: solid;
+}
+
+.legend-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.legend-text strong {
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.legend-examples {
+    font-size: 11px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Badge colors matching graphviz.tmpl */
+.badge-database {
+    background-color: #60a5fa;
+    border-color: #2563eb;
+}
+
+.badge-cache {
+    background-color: #fbbf24;
+    border-color: #f59e0b;
+}
+
+.badge-proxy {
+    background-color: #c084fc;
+    border-color: #7c3aed;
+}
+
+.badge-auth {
+    background-color: #7ed321;
+    border-color: #417505;
+}
+
+.badge-messaging {
+    background-color: #ff9800;
+    border-color: #e65100;
+}
+
+.badge-monitoring {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.badge-app {
+    background-color: #ff6b6b;
+    border-color: #c92a2a;
+}
+
+.badge-service {
+    background-color: #d1d5db;
+    border-color: #6b7280;
+}
+
+/* Legend sections */
+.legend-section {
+    margin-bottom: 25px;
+}
+
+.legend-section:last-child {
+    margin-bottom: 0;
+}
+
+.legend-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Arrows legend */
+.legend-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-arrow-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.legend-arrow-item:hover {
+    background-color: #f9fafb;
+}
+
+.legend-arrow-item svg {
+    flex-shrink: 0;
+}
+
+.legend-arrow-item span {
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.legend-arrow-item code {
+    background-color: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .legend {
+        padding: 15px;
+        margin: 0 10px 20px;
+    }
+    
+    .legend-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .legend h2 {
+        font-size: 14px;
+    }
+    
+    .legend-section h3 {
+        font-size: 12px;
+    }
+    
+    .legend-arrow-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

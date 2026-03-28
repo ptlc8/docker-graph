@@ -8,8 +8,109 @@
 </head>
 <body>
     <h1>Docker Infrastructure Graph</h1>
+
     <div id="diagram">
         <img id="graph-svg" src="graph.svg" alt="Docker Infrastructure Graph" />
+    </div>
+    
+    <div class="legend">
+        <h2>Légende</h2>
+        
+        <div class="legend-section">
+            <h3>Types de services</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-badge badge-database"></span>
+                    <div class="legend-text">
+                        <strong>Database</strong>
+                        <span class="legend-examples">Postgres, MySQL, Mongo, MariaDB, Elasticsearch...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-cache"></span>
+                    <div class="legend-text">
+                        <strong>Cache</strong>
+                        <span class="legend-examples">Redis, Memcached, Valkey...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-proxy"></span>
+                    <div class="legend-text">
+                        <strong>Proxy</strong>
+                        <span class="legend-examples">Nginx, Traefik, Caddy, HAProxy...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-auth"></span>
+                    <div class="legend-text">
+                        <strong>Auth</strong>
+                        <span class="legend-examples">Kratos, Keycloak, Vault, OAuth...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-messaging"></span>
+                    <div class="legend-text">
+                        <strong>Messaging</strong>
+                        <span class="legend-examples">RabbitMQ, Kafka, SMTP...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-monitoring"></span>
+                    <div class="legend-text">
+                        <strong>Monitoring</strong>
+                        <span class="legend-examples">Prometheus, Grafana...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-app"></span>
+                    <div class="legend-text">
+                        <strong>App</strong>
+                        <span class="legend-examples">API, Backend, Frontend, Web...</span>
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge badge-service"></span>
+                    <div class="legend-text">
+                        <strong>Service</strong>
+                        <span class="legend-examples">Autres services (par défaut)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <h3>Relations et connexions</h3>
+            <div class="legend-arrows">
+                <div class="legend-arrow-item">
+                    <svg width="60" height="20" viewBox="0 0 60 20">
+                        <defs>
+                            <marker id="arrow-dep" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#333333" />
+                            </marker>
+                        </defs>
+                        <line x1="5" y1="10" x2="53" y2="10" stroke="#333333" stroke-width="2" marker-end="url(#arrow-dep)" />
+                    </svg>
+                    <span><strong>Dépendance</strong> — Basée sur <code>depends_on</code></span>
+                </div>
+                <div class="legend-arrow-item">
+                    <svg width="60" height="20" viewBox="0 0 60 20">
+                        <defs>
+                            <marker id="arrow-proxy" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#9333ea" />
+                            </marker>
+                        </defs>
+                        <line x1="5" y1="10" x2="53" y2="10" stroke="#9333ea" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrow-proxy)" />
+                    </svg>
+                    <span><strong>Route proxy</strong> — Avec domaine/sous-domaine</span>
+                </div>
+                <div class="legend-arrow-item">
+                    <svg width="60" height="20" viewBox="0 0 60 20">
+                        <line x1="5" y1="10" x2="55" y2="10" stroke="#999999" stroke-width="2" stroke-dasharray="5,3" />
+                    </svg>
+                    <span><strong>Réseau externe</strong> — Connexion à un réseau partagé</span>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
