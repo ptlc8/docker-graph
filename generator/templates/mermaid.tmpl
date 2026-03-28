@@ -45,7 +45,7 @@ flowchart LR
             {{- $type = "database" }}
         {{- else if or (regexMatch "redis|memcached|valkey|keydb" $img) (regexMatch "redis|cache" $nameLower) }}
             {{- $type = "cache" }}
-        {{- else if or (regexMatch "nginx|traefik|caddy|haproxy|envoy" $img) (regexMatch "nginx|proxy|lb" $nameLower) }}
+        {{- else if or (regexMatch "nginx|traefik|caddy|haproxy|envoy" $img) (regexMatch "nginx|proxy|lb|http-daemon|httpd" $nameLower) }}
             {{- $type = "proxy" }}
         {{- else if or (regexMatch "kratos|jackson|keycloak|vault|oauth|authelia" $img) (regexMatch "auth|sso|identity" $nameLower) }}
             {{- $type = "auth" }}
@@ -53,8 +53,6 @@ flowchart LR
             {{- $type = "monitoring" }}
         {{- else if or (regexMatch "kafka|rabbitmq|nats|mqtt|nsq" $img) (regexMatch "queue|message|broker|stream|mail|smtp|email" $nameLower) }}
             {{- $type = "messaging" }}
-        {{- else if or (regexMatch "minio|s3|ceph|swift" $img) (regexMatch "storage|s3|minio" $nameLower) }}
-            {{- $type = "storage" }}
         {{- else if regexMatch "pgadmin|adminer|phpmyadmin" $img }}
             {{- $type = "database" }}
         {{- else if regexMatch "api|backend|server|app|service|web|www|site|frontend|ui" $nameLower }}
@@ -70,11 +68,12 @@ flowchart LR
 
     {{- /* STYLE DEFINITIONS */}}
     classDef database fill:#60a5fa,stroke:#2563eb,stroke-width:2px
-    classDef cache fill:#f5a623,stroke:#f57f17,stroke-width:2px
+    classDef cache fill:#fbbf24,stroke:#f59e0b,stroke-width:2px
     classDef proxy fill:#c084fc,stroke:#7c3aed,stroke-width:2px
     classDef auth fill:#7ed321,stroke:#417505,stroke-width:2px
     classDef service fill:#d1d5db,stroke:#6b7280,stroke-width:1px
     classDef messaging fill:#ff9800,stroke:#e65100,stroke-width:2px
+    classDef monitoring fill:#f3f4f6,stroke:#9ca3af,stroke-width:2px
     classDef app fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px
 
     {{- /* EXTERNAL NETWORKS */}}
